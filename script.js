@@ -1,10 +1,10 @@
 /* =====================================================================
-   WebGL PS3 Spline Wave Background — Script Autonome Corrigé
+   WebGL PS3 Spline Wave Background — Noir & Blanc, Dense, Actif & Vertical
    ===================================================================== */
 (function(){
 'use strict';
 
-// ── 1. Injection du CSS pour forcer le canvas à s'afficher derrière ──
+// ── 1. Injection automatique du CSS pour le canvas de fond ──
 const style = document.createElement('style');
 style.innerHTML = `
   #ps3-wave-canvas {
@@ -13,7 +13,7 @@ style.innerHTML = `
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 0 !important; /* Derrière le dashboard qui est à z-index: 10 */
+    z-index: 0 !important;
     pointer-events: none !important;
     display: block !important;
   }
@@ -23,21 +23,21 @@ style.innerHTML = `
     z-index: 1 !important;
     pointer-events: none !important;
     background:
-      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, rgba(2,8,18,0.6) 100%),
-      linear-gradient(to bottom, rgba(2,8,18,0.2) 0%, transparent 20%, transparent 80%, rgba(2,8,18,0.3) 100%);
+      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, rgba(0,0,0,0.85) 100%),
+      linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
   }
 `;
 document.head.appendChild(style);
 
-// ── 2. Création et insertion du Canvas et de la Vignette dans le Body ──
+// ── 2. Création et insertion du Canvas et de la Vignette ──
 const canvas = document.createElement('canvas');
 canvas.id = 'ps3-wave-canvas';
 canvas.setAttribute('aria-hidden', 'true');
-document.body.appendChild(canvas);
+document.body.prepend(canvas);
 
 const vignette = document.createElement('div');
 vignette.className = 'ps3-vignette';
-document.body.appendChild(vignette);
+document.body.prepend(vignette);
 
 // ── 3. Cœur de l'algorithme Spline PS3 ──
 const PS3 = {
@@ -93,26 +93,30 @@ function sampleTableVec4(table, idxFloat, out) {
 function vec4Set(out, base, x, y, z, w) { out[base]=x; out[base+1]=y; out[base+2]=z; out[base+3]=w; }
 function vec4Mix(a, b, t, out) { const s=1-t; out[0]=a[0]*s+b[0]*t; out[1]=a[1]*s+b[1]*t; out[2]=a[2]*s+b[2]*t; out[3]=a[3]*s+b[3]*t; }
 
+// ── Paramètres ajustés : Noir & Blanc pur, plus actif, vagues intenses ──
 const S = {
-  colorR: 37, colorG: 89, colorB: 179,
-  gradientTopMul: 0.15, gradientBotMul: 0.75, // Éclairci légèrement pour bien voir le fond
-  flowSpeed: 0.35, tension: 0.15, damping: 0.0001,
+  // Désaturation totale pour un rendu strict Noir & Blanc
+  colorR: 255, colorG: 255, colorB: 255,
+  gradientTopMul: 0.02, gradientBotMul: 0.25, // Fond presque noir pur
+  flowSpeed: 0.45,        // ⬆️ Très actif / rapide
+  tension: 0.18, damping: 0.0001,
   length: 0.306001, spacing: 407.658, timeStep: 1.0,
-  bandAmplitude: 0.280, bandSecondaryFreq: 7.0, bandSecondaryAmp: 0.035,
-  travelSpeed1: 0.35, travelAmp1: 0.02,
-  travelSpeed2: 0.25, travelAmp2: 0.012,
-  perturbation: 0.12, perturbationScale: 0.09,
-  waveCosAmp: 0.12, waveBias: -0.1, waveHeightScale: 0.6, waveSoftClip: 0.22,
+  bandAmplitude: 0.350,   // ⬆️ Amplitude des vagues accentuée
+  bandSecondaryFreq: 8.0, bandSecondaryAmp: 0.045,
+  travelSpeed1: 0.45, travelAmp1: 0.025,
+  travelSpeed2: 0.30, travelAmp2: 0.015,
+  perturbation: 0.15, perturbationScale: 0.11,
+  waveCosAmp: 0.15, waveBias: -0.1, waveHeightScale: 0.75, waveSoftClip: 0.22,
   rePipelineBlend: 0.45, reDescriptorStrength: 0.7,
-  reSyntheticDescriptorSeed: 1337, reSyntheticDescriptorMotion: 0.8,
+  reSyntheticDescriptorSeed: 1337, reSyntheticDescriptorMotion: 0.9,
   reKernelGain: 0.05, reNormalizeGain: 0.08, reKernelPhaseStep: 0.45,
-  reIndexJitter: 0.008, reTemporalSmooth: 0.80,
-  fresnelPower: 4.0, fresnelScale: 0.6, opacity: 0.95, brightness: 1.2,
-  zDetailScale: 0.08,
+  reIndexJitter: 0.01, reTemporalSmooth: 0.75,
+  fresnelPower: 3.5, fresnelScale: 0.7, opacity: 0.95, brightness: 1.4,
+  zDetailScale: 0.1,
   ffdScale1X: 5.67726, ffdScale1Y: 1.00077, ffdScale1Z: 1.0,
   ffdScale2X: 2.82755, ffdScale2Y: 1.27579, ffdScale2Z: 2.88782,
   ffdOffsetX: 0.0, ffdOffsetY: -0.469999, ffdOffsetZ: 0.0,
-  ffdYAmp: 0.08, ffdZAmp: 0.08,
+  ffdYAmp: 0.12, ffdZAmp: 0.12,
 };
 
 class Pipeline {
@@ -278,8 +282,9 @@ const bgProg = link(
 const extDeriv = gl.getExtension('OES_standard_derivatives');
 const derivPrecision = extDeriv ? '#extension GL_OES_standard_derivatives : enable\n' : '';
 
+// ── Shader de vagues avec fort mouvement vertical (sin(uTime * 1.2)) ──
 const waveProg = link(
-  'precision highp float;\nattribute vec2 aPos;\nuniform sampler2D uTex;\nuniform float uTime;\nuniform float flowSpeed,tension,damping,uLength,spacing,perturbation,perturbationScale,timeStep;\nuniform float waveCosAmp,waveBias,waveHeightScale,waveSoftClip;\nuniform float ffdYAmp,ffdZAmp,zDetailScale;\nuniform vec3 ffdScale1,ffdScale2,ffdOffset;\nuniform float fresnelPower_,fresnelScale_;\nvarying vec3 vPos;\nvarying float vFresnel;\nvoid main(){\n  vec3 p=vec3(aPos.x,0.0,aPos.y);\n  vec2 uv=(aPos+1.0)*0.5;\n  float disp=(texture2D(uTex,uv).r-0.5)*0.8333;\n  p.y=disp;\n  p.y += sin(uTime * 0.8) * 0.12;\n  p.y+=sin((p*ffdScale1+ffdOffset).x+uTime*flowSpeed)*ffdYAmp;\n  p.z+=cos((p*ffdScale2+ffdOffset).z+uTime*flowSpeed)*ffdZAmp;\n  float bw=(cos(p.x*2.0-uTime*0.5*timeStep)*waveCosAmp+waveBias)*(1.0-damping);\n  bw+=tension*sin(p.x*uLength+uTime*flowSpeed*timeStep*0.25);\n  float st=perturbation*perturbationScale*(sin((p.x*uLength*6.0+p.z*0.5)*spacing*0.01+uTime*flowSpeed*timeStep*0.7)*0.5+sin((p.x*uLength*10.0-p.z*0.8)*spacing*0.005-uTime*flowSpeed*timeStep*0.35)*0.25);\n  float tw=(bw+st)*waveHeightScale;\n  float absT=abs(tw/max(waveSoftClip,0.0001));\n  tw=waveSoftClip*(tw/max(waveSoftClip,0.0001))/(1.0+absT);\n  p.y-=tw;\n  vec2 uv2=uv;\n  uv2.x=fract(uv2.x-uTime*flowSpeed*0.04*timeStep);\n  float disp2=(texture2D(uTex,uv2).r-0.5)*0.8333;\n  p.z-=disp2*zDetailScale;\n  float edgeFactor=abs(p.x);\n  vFresnel=pow(edgeFactor,fresnelPower_)*fresnelScale_;\n  gl_Position=vec4(p,1.0);vPos=p;\n}',
+  'precision highp float;\nattribute vec2 aPos;\nuniform sampler2D uTex;\nuniform float uTime;\nuniform float flowSpeed,tension,damping,uLength,spacing,perturbation,perturbationScale,timeStep;\nuniform float waveCosAmp,waveBias,waveHeightScale,waveSoftClip;\nuniform float ffdYAmp,ffdZAmp,zDetailScale;\nuniform vec3 ffdScale1,ffdScale2,ffdOffset;\nuniform float fresnelPower_,fresnelScale_;\nvarying vec3 vPos;\nvarying float vFresnel;\nvoid main(){\n  vec3 p=vec3(aPos.x,0.0,aPos.y);\n  vec2 uv=(aPos+1.0)*0.5;\n  float disp=(texture2D(uTex,uv).r-0.5)*0.8333;\n  p.y=disp;\n  // ⬆️ Mouvement vertical ample et continu (monte et descend fort)\n  p.y += sin(uTime * 1.2) * 0.22;\n  p.y+=sin((p*ffdScale1+ffdOffset).x+uTime*flowSpeed)*ffdYAmp;\n  p.z+=cos((p*ffdScale2+ffdOffset).z+uTime*flowSpeed)*ffdZAmp;\n  float bw=(cos(p.x*2.0-uTime*0.5*timeStep)*waveCosAmp+waveBias)*(1.0-damping);\n  bw+=tension*sin(p.x*uLength+uTime*flowSpeed*timeStep*0.25);\n  float st=perturbation*perturbationScale*(sin((p.x*uLength*6.0+p.z*0.5)*spacing*0.01+uTime*flowSpeed*timeStep*0.7)*0.5+sin((p.x*uLength*10.0-p.z*0.8)*spacing*0.005-uTime*flowSpeed*timeStep*0.35)*0.25);\n  float tw=(bw+st)*waveHeightScale;\n  float absT=abs(tw/max(waveSoftClip,0.0001));\n  tw=waveSoftClip*(tw/max(waveSoftClip,0.0001))/(1.0+absT);\n  p.y-=tw;\n  vec2 uv2=uv;\n  uv2.x=fract(uv2.x-uTime*flowSpeed*0.04*timeStep);\n  float disp2=(texture2D(uTex,uv2).r-0.5)*0.8333;\n  p.z-=disp2*zDetailScale;\n  float edgeFactor=abs(p.x);\n  vFresnel=pow(edgeFactor,fresnelPower_)*fresnelScale_;\n  gl_Position=vec4(p,1.0);vPos=p;\n}',
   derivPrecision + 'precision highp float;\nvarying vec3 vPos;\nvarying float vFresnel;\nuniform float opacity,brightness,fresnelPower_,fresnelScale_;\nvoid main(){\n  float F=vFresnel;\n  gl_FragColor=vec4(vec3(1.0),F*opacity*brightness);\n}'
 );
 
@@ -302,7 +307,8 @@ const bgPos = aloc(bgProg, 'aPos');
 if (bgPos >= 0) { gl.enableVertexAttribArray(bgPos); gl.vertexAttribPointer(bgPos, 2, gl.FLOAT, false, 0, 0); }
 unbindVAO();
 
-const RES = 130; 
+// ⬆️ Résolution augmentée (RES = 160) pour générer beaucoup plus de petits traits/lignes serrées
+const RES = 160; 
 const strips = RES - 1, vps = RES * 2;
 const verts = new Float32Array(strips * vps * 2);
 let vi = 0;
@@ -381,7 +387,7 @@ window.addEventListener('resize', resize, { passive:true });
 resize();
 
 const cr = S.colorR/255, cg = S.colorG/255, cb = S.colorB/255;
-const topR = cr*S.gradientTopMul, topG = cg*S.gradientTopMul, topB = cb*S.gradientTopMul*1.2;
+const topR = cr*S.gradientTopMul, topG = cg*S.gradientTopMul, topB = cb*S.gradientTopMul;
 const botR = cr*S.gradientBotMul, botG = cg*S.gradientBotMul, botB = cb*S.gradientBotMul;
 
 let prev = performance.now(), time = 0;
