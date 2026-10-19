@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Trevyn — XMB</title>
+  <title>Trevyn — XMB Test</title>
   <style>
-    /* Styles globaux */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -20,16 +19,15 @@
       color: #fff;
     }
 
-    /* Layout principal du Dashboard */
+    /* Le dashboard est positionné au-dessus (z-index: 10) pour voir la vague transparaître */
     .dashboard-layout {
       display: flex;
       width: 100vw;
       height: 100vh;
       position: relative;
-      z-index: 10; /* S'assure que le contenu passe bien par-dessus ton script d'arrière-plan */
+      z-index: 10;
     }
 
-    /* Sidebar transparente (Glassmorphism) */
     aside {
       width: 260px;
       background: rgba(10, 15, 30, 0.35);
@@ -72,7 +70,6 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Contenu principal */
     main {
       flex: 1;
       display: flex;
@@ -88,7 +85,6 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    /* Grille de cartes statistiques (Glassmorphism) */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -118,7 +114,6 @@
       font-weight: 600;
     }
 
-    /* Panneau principal de contenu (Glassmorphism) */
     .panel {
       background: rgba(15, 23, 42, 0.25);
       backdrop-filter: blur(12px);
@@ -140,7 +135,6 @@
 </head>
 <body>
 
-  <!-- Structure du Dashboard -->
   <div class="dashboard-layout">
     <aside>
       <div class="logo">Trevyn — XMB</div>
@@ -176,12 +170,12 @@
 
       <div class="panel">
         <h2>Activité récente</h2>
-        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">Aucun événement récent enregistré...</p>
+        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">La vague est désormais bien visible en arrière-plan...</p>
       </div>
     </main>
   </div>
 
-  <!-- Branchement de ton fichier script.js externe pour l'animation en arrière-plan -->
+  <!-- Branche ton script ici -->
   <script src="script.js" defer></script>
 </body>
 </html>
